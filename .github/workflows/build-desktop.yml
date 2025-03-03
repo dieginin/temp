@@ -24,7 +24,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    needs: pre-build
+    needs: [pre-build]
 
     steps:
     - name: Checkout code
@@ -68,7 +68,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: pre-build
+    needs: [pre-build]
 
     steps:
     - name: Checkout code
