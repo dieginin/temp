@@ -22,7 +22,7 @@ jobs:
 
     - name: Set BUILD_NUMBER from VERSION
       run: |
-        BUILD_NUMBER="${GITHUB_REF#refs/tags/}"
+        BUILD_NUMBER="${GITHUB_REF#refs/tags/v}"
         BUILD_NUMBER=$(echo $BUILD_NUMBER | cut -d '.' -f 1)
         echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
@@ -68,7 +68,7 @@ jobs:
 
     - name: Set BUILD_NUMBER from VERSION
       run: |
-        $BUILD_NUMBER = ($env:GITHUB_REF -replace '^refs/tags/', '').Split('.')[0][1]
+        $BUILD_NUMBER = ($env:GITHUB_REF -replace '^refs/tags/v', '').Split('.')[0]
         echo "BUILD_NUMBER=$BUILD_NUMBER" | Out-File -Append -FilePath $env:GITHUB_ENV
 
     - name: Setup Python ${{ env.PYTHON_VERSION }}
