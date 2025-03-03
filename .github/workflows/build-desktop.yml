@@ -48,7 +48,7 @@ jobs:
     - name: Flet Build Linux
       run: |
         flutter config --no-analytics 
-        flet build linux --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright (c) 2025 $COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
+        flet build linux --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
 
     - name: Upload Linux Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -83,7 +83,7 @@ jobs:
     - name: Flet Build macOS
       run: |
         flutter config --no-analytics
-        flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright (c) 2025 $COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
+        flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
 
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -119,7 +119,7 @@ jobs:
       run: |
         print($PROJECT, $env:PROJECT)
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright (c) 2025 $env:COMPANY. All rights reserved." --build-number=$env:BUILD_NUMBER --build-version=$env:BUILD_VERSION
+        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=$env:BUILD_NUMBER --build-version=$env:BUILD_VERSION
 
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
