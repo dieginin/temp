@@ -3,8 +3,7 @@ name: Desktop Builds (macOS, Windows)
 on:
   push:
     tags:
-      - 'v*'  # Solo se activa para tags que comienzan con 'v'
-  workflow_dispatch:
+      - 'v*'
 
 env:
   PROJECT: MyApp
@@ -21,8 +20,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set BUILD_NUMBER from BUILD_VERSION
-      run: BUILD_NUMBER=$(echo "${GITHUB_REF#refs/tags/}" | cut -d '.' -f 1)
+    - name: Set BUILD_NUMBER from VERSION
+      run: |
+        BUILD_NUMBER="${GITHUB_REF#refs/tags/}"
+        BUILD_NUMBER=$(echo $BUILD_NUMBER | cut -d '.' -f 1)
+        echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
     - name: Setup Python ${{ env.PYTHON_VERSION }}
       uses: actions/setup-python@v5
@@ -64,8 +66,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set BUILD_NUMBER from BUILD_VERSION
-      run: $BUILD_NUMBER = ($env:GITHUB_REF -replace '^refs/tags/', '').Split('.')[0]
+    - name: Set BUILD_NUMBER from VERSION
+      run: |
+        $BUILD_NUMBER = ($env:GITHUB_REF -replace '^refs/tags/', '').Split('.')[0]
+        echo "BUILD_NUMBER=$BUILD_NUMBER" | Out-File -Append -FilePath $env:GITHUB_ENV
 
     - name: Setup Python ${{ env.PYTHON_VERSION }}
       uses: actions/setup-python@v5
@@ -97,7 +101,7 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [build-macos, build-windows]  # Asegura que este paso ocurra después de las compilaciones
+    needs: [build-macos, build-windows]
 
     steps:
     - name: Checkout code
