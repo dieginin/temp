@@ -46,7 +46,9 @@ jobs:
         flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
 
     - name: Set executable permissions
-      run: chmod +x build/macos/$PROJECT.app/Contents/MacOS/$PROJECT
+      run: |
+        chmod +x build/macos/$PROJECT.app/Contents/MacOS/$PROJECT
+        ls -l build/macos/$PROJECT.app/Contents/MacOS/
 
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
