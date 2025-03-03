@@ -90,15 +90,3 @@ jobs:
         path: build/windows
         if-no-files-found: error
         overwrite: false
-
-  release-windows:
-    runs-on: ubuntu-latest
-    needs: build-windows
-    steps:
-      - name: Release
-        uses: jasondavis303/tag-and-release-and-upload@v1.2.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          version: v${{ env.BUILD_VERSION }}
-          assets: '[ "windows-build-artifact" ]'
-          overwrite: false
