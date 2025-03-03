@@ -150,7 +150,7 @@ jobs:
 
     - name: Flet Build Windows
       run: |
-        flutter config --no-analytics
+        flutter config --no-analytics --no-cli-animations
         flet build windows --verbose --no-rich-output --build-number=$env:BUILD_NUMBER --build-version=$env:BUILD_VERSION
 
     - name: Upload Windows Artifact
