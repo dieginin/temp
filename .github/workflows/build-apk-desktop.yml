@@ -10,7 +10,7 @@ env:
   # https://flet.dev/docs/publish#versioning
   BUILD_NAME: MyApp
   BUILD_COMPANY: Guanas
-  BUILD_NUMBER: 0
+  BUILD_NUMBER: 1
   BUILD_VERSION: 0.1.1
   PYTHON_VERSION: 3.12.3
   FLUTTER_VERSION: 3.29.0
