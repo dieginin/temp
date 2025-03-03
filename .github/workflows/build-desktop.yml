@@ -8,8 +8,8 @@ on:
 
 env:
   # https://flet.dev/docs/publish#versioning
-  BUILD_NAME: MyApp
-  BUILD_COMPANY: Guanas
+  PROJECT: MyApp
+  COMPANY: Guanas
   BUILD_NUMBER: 1
   BUILD_VERSION: 1.0.0
   PYTHON_VERSION: 3.12.3
@@ -48,7 +48,7 @@ jobs:
     - name: Flet Build Linux
       run: |
         flutter config --no-analytics 
-        flet build linux --verbose --project=$BUILD_NAME --company=$BUILD_COMPANY --copyright="Copyright (c) 2025 $BUILD_COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
+        flet build linux --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright (c) 2025 $COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
 
     - name: Upload Linux Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -83,7 +83,7 @@ jobs:
     - name: Flet Build macOS
       run: |
         flutter config --no-analytics
-        flet build macos --verbose --project=$BUILD_NAME --company=$BUILD_COMPANY --copyright="Copyright (c) 2025 $BUILD_COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
+        flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright (c) 2025 $COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
 
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -117,8 +117,9 @@ jobs:
 
     - name: Flet Build Windows
       run: |
+        print($PROJECT, $env:PROJECT)
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=$BUILD_NAME --company=$BUILD_COMPANY --copyright="Copyright (c) 2025 $BUILD_COMPANY. All rights reserved." --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
+        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright (c) 2025 $env:COMPANY. All rights reserved." --build-number=$env:BUILD_NUMBER --build-version=$env:BUILD_VERSION
 
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
