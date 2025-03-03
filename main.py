@@ -51,7 +51,7 @@ def main(page: ft.Page):
     txt_number = ft.TextField(value="0", text_align=ft.TextAlign.RIGHT, width=100)
 
     # Versión local de la aplicación
-    local_version = "0.1.2"
+    local_version = "0.1.3"
 
     # Obtener la última versión del release de GitHub
     latest_version, assets = get_latest_release()
