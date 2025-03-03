@@ -10,7 +10,7 @@ env:
   # https://flet.dev/docs/publish#versioning
   BUILD_NAME: MyApp
   BUILD_COMPANY: Guanas
-  BUILD_COPYRIGHT: Copyright (c) 2025 Guanas. All rights reserved.
+  BUILD_COPYRIGHT: "Copyright (c) 2025 Guanas. All rights reserved."
   BUILD_NUMBER: 1
   BUILD_VERSION: 1.0.0
   PYTHON_VERSION: 3.12.3
