@@ -4,7 +4,7 @@ import time
 
 import flet as ft
 import requests
-
+from config import local_version
 
 def get_latest_release():
     # URL de la API para obtener la última versión del release de tu repositorio
@@ -49,9 +49,6 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     txt_number = ft.TextField(value="0", text_align=ft.TextAlign.RIGHT, width=100)
-
-    # Versión local de la aplicación
-    local_version = "0.1.5"
 
     # Obtener la última versión del release de GitHub
     latest_version, assets = get_latest_release()
