@@ -8,19 +8,22 @@ on:
 jobs:
   tag_version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get current version from file
+      - name: Get current version
         id: get_version
         run: |
           VERSION=$(sed -nE 's/^VERSION\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/p' config.py)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Get latest Git tag
+      - name: Get latest tag
         id: get_latest_tag
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
