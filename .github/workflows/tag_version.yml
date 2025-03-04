@@ -17,7 +17,7 @@ jobs:
       - name: Get current version from file
         id: get_version
         run: |
-          VERSION=$(grep -oP '(?<=versión\s*=\s*["\x27])\d+\.\d+\.\d+(?=["\x27])' config.py)
+          VERSION=$(grep -oP '(?<=VERSION\s*=\s*["\x27])\d+\.\d+\.\d+(?=["\x27])' config.py)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Get latest Git tag
