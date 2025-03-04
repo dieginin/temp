@@ -4,7 +4,9 @@ import time
 
 import flet as ft
 import requests
-from config import local_version
+from config import VERSION
+
+local_version = VERSION
 
 def get_latest_release():
     # URL de la API para obtener la última versión del release de tu repositorio
