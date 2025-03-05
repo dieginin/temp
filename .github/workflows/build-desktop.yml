@@ -118,8 +118,8 @@ jobs:
         files: |
           build/macos/
           build/windows/
-        tag_name: ${{ github.ref }}
-        name: "My Custom Release Name"
+        name: "Desktop Releases"
+        body: ${{ github.ref }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
