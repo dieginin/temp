@@ -39,10 +39,10 @@ jobs:
         flutter config --no-analytics
         flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
 
-    # - name: Set executable permissions
-    #   run: |
-    #     chmod +x build/macos/$PROJECT.app/Contents/MacOS/$PROJECT
-    #     ls -l build/macos/$PROJECT.app/Contents/MacOS/
+    - name: Set executable permissions
+      run: |
+        chmod +x build/macos/$PROJECT.app/Contents/MacOS/$PROJECT
+        ls -l build/macos/$PROJECT.app/Contents/MacOS/
 
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
