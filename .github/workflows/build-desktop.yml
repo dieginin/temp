@@ -1,10 +1,9 @@
 name: Desktop Builds (macOS, Windows)
 
 on:
-  workflow_run:
-    workflows: ["Tag new version"]
-    types:
-      - completed
+  workflow_dispatch:
+  push:
+    tags: ['v*']
 
 env:
   PROJECT: MyApp
