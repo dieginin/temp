@@ -20,12 +20,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set BUILD_NUMBER from VERSION
-      run: |
-        $BUILD_NUMBER="${GITHUB_REF#refs/tags/}"
-        BUILD_NUMBER=$(echo $BUILD_NUMBER | cut -d '.' -f 1)
-        echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
-
     - name: Setup Python ${{ env.PYTHON_VERSION }}
       uses: actions/setup-python@v5
       with:
@@ -44,7 +38,7 @@ jobs:
     - name: Flet Build macOS
       run: |
         flutter config --no-analytics
-        flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$BUILD_NUMBER --build-version=${GITHUB_REF#refs/tags/}
+        flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$(echo ${GITHUB_REF#refs/tags/v}" | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Set executable permissions
       run: |
@@ -66,11 +60,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set BUILD_NUMBER from VERSION
-      run: |
-        $BUILD_NUMBER = ($env:GITHUB_REF -replace '^refs/tags/', '').Split('.')[0]
-        echo "BUILD_NUMBER=$BUILD_NUMBER" | Out-File -Append -FilePath $env:GITHUB_ENV
-
     - name: Setup Python ${{ env.PYTHON_VERSION }}
       uses: actions/setup-python@v5
       with:
@@ -89,7 +78,7 @@ jobs:
     - name: Flet Build Windows
       run: |
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=$BUILD_NUMBER --build-version=${GITHUB_REF#refs/tags/}
+        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=($env:GITHUB_REF -replace '^refs/tags/v', '').Split('.')[0] --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
