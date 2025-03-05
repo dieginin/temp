@@ -78,7 +78,9 @@ jobs:
     - name: Flet Build Windows
       run: |
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=($env:GITHUB_REF -replace '^refs/tags/v', '').Split('.')[0] --build-version=${GITHUB_REF#refs/tags/v}
+        $version = ($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') 
+        Write-Output "Build number extracted: $version"
+        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=$version --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
