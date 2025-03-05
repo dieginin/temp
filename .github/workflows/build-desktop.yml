@@ -44,11 +44,14 @@ jobs:
         chmod +x build/macos/$PROJECT.app/Contents/MacOS/$PROJECT
         ls -l build/macos/$PROJECT.app/Contents/MacOS/
 
+    - name: Compress macOS Build Folder
+      run: zip -r build/macos.zip build/macos
+
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
       with:
         name: macos-build-artifact
-        path: build/macos
+        path: build/macos.zip
         if-no-files-found: warn
         overwrite: false
 
@@ -79,11 +82,14 @@ jobs:
         flutter config --no-analytics
         flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
 
+    - name: Compress Windows Build Folder
+      run: powershell Compress-Archive -Path build/windows/* -DestinationPath build/windows.zip
+
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
       with:
         name: windows-build-artifact
-        path: build/windows
+        path: build/windows.zip
         if-no-files-found: warn
         overwrite: false
 
@@ -115,10 +121,5 @@ jobs:
         files: |
           build/macos.zip
           build/windows.zip
-        name: "Desktop Releases"
-        tag_name: ${{ github.ref }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Notify Release Success
-      run: echo "Release has been successfully created!"
