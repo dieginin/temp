@@ -2,7 +2,8 @@ name: Tag new version
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   tag_version:

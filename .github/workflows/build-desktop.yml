@@ -3,7 +3,8 @@ name: Desktop Builds (macOS, Windows)
 on:
   workflow_run:
     workflows: ["Tag new version"]
-    types: [completed]
+    types:
+      - completed
 
 env:
   PROJECT: MyApp
