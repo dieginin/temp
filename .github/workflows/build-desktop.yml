@@ -38,7 +38,7 @@ jobs:
     - name: Flet Build macOS
       run: |
         flutter config --no-analytics
-        $BUILD_NUMBER= ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1
+        $BUILD_NUMBER=${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1
         flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$BUILD_NUMBER --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Set executable permissions
