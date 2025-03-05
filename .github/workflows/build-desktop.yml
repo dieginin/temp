@@ -111,8 +111,8 @@ jobs:
 
     - name: Compress folders
       run: |
-        cd build/macos && zip -r ../macos.zip ./*
-        cd build/windows && zip -r ../windows.zip ./*
+        (cd build/macos && zip -r ../macos.zip ./*) && \
+        (cd build/windows && zip -r ../windows.zip ./*)
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
