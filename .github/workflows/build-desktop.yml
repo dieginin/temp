@@ -109,17 +109,14 @@ jobs:
         name: windows-build-artifact
         path: build/windows
 
-    - name: Verify Downloaded Files
-      run: ls -R build/
-
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          build/macos/
-          build/windows/
+          build/macos.zip
+          build/windows.zip
         name: "Desktop Releases"
-        body: ${{ github.ref }}
+        tag_name: ${{ github.ref }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
