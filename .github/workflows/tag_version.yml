@@ -1,7 +1,7 @@
 name: Tag new version
 
 on:
-  push:
+  create:
     branches:
       - main
 
