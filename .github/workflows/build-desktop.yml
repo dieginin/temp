@@ -116,8 +116,8 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          build/macos
-          build/windows
+          build/macos/
+          build/windows/
         tag_name: ${{ github.ref }}
         name: "My Custom Release Name"
       env:
