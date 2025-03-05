@@ -118,6 +118,8 @@ jobs:
         files: |
           build/macos/**
           build/windows/**
+        tag_name: "My Custom Tag Name"
+        name: "My Custom Release Name"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
