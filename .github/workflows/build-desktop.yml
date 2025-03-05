@@ -1,7 +1,6 @@
 name: Desktop Builds (macOS, Windows)
 
 on:
-  workflow_dispatch:
   push:
     tags: ['v*']
 
