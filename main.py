@@ -1,132 +1,149 @@
 import os
-import sys
-import time
+import platform
+import shutil
+import zipfile
 
 import flet as ft
+import requests
 
-# import requests
 from config import VERSION
 
-local_version = VERSION
-
-# def get_latest_release():
-#     # URL de la API para obtener la última versión del release de tu repositorio
-#     url = "https://api.github.com/repos/dieginin/temp/releases/latest"
-#     response = requests.get(url)
-#     if response.status_code == 200:
-#         release_data = response.json()
-#         return release_data["tag_name"], release_data["assets"]
-#     else:
-#         return "No disponible", []
+# Configuración de GitHub
+GITHUB_REPO = "dieginin/temp"  # Cambia esto a tu repo
+API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 
-# def download_asset(asset_url, file_name):
-#     # Realiza la solicitud para descargar el archivo
-#     response = requests.get(asset_url, stream=True)
-#     if response.status_code == 200:
-#         # Guarda el archivo descargado (reemplazando el existente)
-#         with open(file_name, "wb") as file:
-#             for chunk in response.iter_content(chunk_size=1024):
-#                 if chunk:
-#                     file.write(chunk)
-#         return True
-#     else:
-#         return False
+def get_latest_version():
+    """Obtiene la última versión disponible en GitHub"""
+    try:
+        response = requests.get(API_URL)
+        response.raise_for_status()
+        data = response.json()
+        return data["tag_name"].lstrip("v"), data["assets"]
+    except requests.RequestException as e:
+        print("Error al verificar actualizaciones:", e)
+        return None, None
 
 
-# def restart_app():
-#     """Reinicia la aplicación"""
-#     time.sleep(1)  # Espera un poco antes de reiniciar
-#     os.execv(sys.executable, ["python"] + sys.argv)  # Reinicia el script
+def find_update_asset(assets):
+    """Busca el archivo de actualización correspondiente al sistema operativo"""
+    system = platform.system().lower()
+    for asset in assets:
+        if "macos" in asset["name"].lower() and system == "darwin":
+            return asset["browser_download_url"], asset["name"]
+        elif "windows" in asset["name"].lower() and system == "windows":
+            return asset["browser_download_url"], asset["name"]
+    return None, None
 
 
-# def compare_versions(current_version, latest_version):
-#     # Compara dos versiones en formato 'X.Y.Z'
-#     current_version_parts = [int(part) for part in current_version.split(".")]
-#     latest_version_parts = [int(part) for part in latest_version.split(".")]
-#     return latest_version_parts > current_version_parts
+def download_update(url, filename, progress_callback):
+    """Descarga el archivo de actualización con progreso"""
+    with requests.get(url, stream=True) as response:
+        response.raise_for_status()
+        total_size = int(response.headers.get("content-length", 0))
+        downloaded = 0
+
+        with open(filename, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    progress_callback(downloaded / total_size)
+
+
+def apply_update(filename):
+    """Extrae y reemplaza la aplicación con la nueva versión"""
+    system = platform.system().lower()
+    extract_path = os.getcwd()
+
+    if filename.endswith(".zip"):
+        with zipfile.ZipFile(filename, "r") as zip_ref:
+            zip_ref.extractall(extract_path)
+        os.remove(filename)
+
+    # Reemplazar archivos antiguos
+    if system == "windows":
+        new_exe = os.path.join(extract_path, "MyApp.exe")
+        old_exe = os.path.join(extract_path, "MyApp_old.exe")
+
+        if os.path.exists(new_exe):
+            os.rename("MyApp.exe", old_exe)
+            os.rename(new_exe, "MyApp.exe")
+            os.remove(old_exe)
+
+    elif system == "darwin":
+        new_app = os.path.join(extract_path, "MyApp.app")
+        old_app = os.path.join(extract_path, "MyApp_old.app")
+
+        if os.path.exists(new_app):
+            if os.path.exists(old_app):
+                shutil.rmtree(old_app)
+            os.rename("MyApp.app", old_app)
+            os.rename(new_app, "MyApp.app")
+            shutil.rmtree(old_app)
+
+
+def update_app(page: ft.Page):
+    """Interfaz gráfica de actualización con barra de progreso"""
+    page.clean()
+    page.title = "Actualizando..."
+    progress = ft.ProgressBar(width=300)
+    status = ft.Text("Buscando actualización...")
+    page.add(status, progress)
+
+    latest_version, assets = get_latest_version()
+    if not latest_version or not assets:
+        status.value = "Error al buscar actualizaciones."
+        page.update()
+        return
+
+    if latest_version <= VERSION:
+        status.value = "Ya tienes la última versión."
+        page.update()
+        return
+
+    url, filename = find_update_asset(assets)
+    if not url:
+        status.value = "No se encontró una actualización para tu sistema operativo."
+        page.update()
+        return
+
+    status.value = f"Descargando actualización v{latest_version}..."
+    page.update()
+
+    def update_progress(value):
+        progress.value = value
+        page.update()
+
+    download_update(url, filename, update_progress)
+
+    status.value = "Instalando actualización..."
+    page.update()
+    apply_update(filename)
+
+    status.value = "Actualización completada. Reiniciando..."
+    page.update()
+
+    # Reiniciar la aplicación
+    if platform.system().lower() == "windows":
+        os.execl("MyApp.exe", "")
+    else:
+        os.execl("./MyApp.app/Contents/MacOS/MyApp", "")
 
 
 def main(page: ft.Page):
-    page.title = "Flet Counter Example"
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    """Interfaz principal con botón de verificación de actualizaciones"""
+    page.title = "Flet App"
 
-    txt_number = ft.TextField(value="0", text_align=ft.TextAlign.RIGHT, width=100)
+    def check_for_updates(e):
+        latest_version, _ = get_latest_version()
+        if latest_version and latest_version > VERSION:
+            page.add(ft.Text(f"¡Nueva versión {latest_version} disponible!"))
+            page.add(ft.ElevatedButton("Actualizar ahora", on_click=update_app))
+        else:
+            page.add(ft.Text("Estás en la última versión."))
 
-    # # Obtener la última versión del release de GitHub
-    # latest_version, assets = get_latest_release()
-
-    # # Comparar las versiones
-    # if compare_versions(local_version, latest_version):
-    #     # Si la versión más reciente es mayor que la local, habilitar la descarga
-    #     update_available = True
-    # else:
-    #     # Si la aplicación ya está actualizada
-    #     update_available = False
-
-    def minus_click(e):
-        txt_number.value = str(int(txt_number.value) - 1)
-        page.update()
-
-    def plus_click(e):
-        txt_number.value = str(int(txt_number.value) + 1)
-        page.update()
-
-    # def download_click(e):
-    #     if assets:
-    #         # Tomamos el primer asset (puedes modificar esto si hay más de un asset)
-    #         asset_url = assets[0]["browser_download_url"]
-    #         file_name = assets[0]["name"]
-
-    #         # Descargar y reemplazar el archivo
-    #         success = download_asset(asset_url, file_name)
-    #         if success:
-    #             page.add(
-    #                 ft.Text(
-    #                     f"Archivo {file_name} descargado y reemplazado exitosamente.",
-    #                     size=18,
-    #                 )
-    #             )
-
-    #             # Reiniciar la aplicación
-    #             restart_app()
-    #         else:
-    #             page.add(ft.Text("Error al descargar el archivo.", size=18))
-    #     else:
-    #         page.add(ft.Text("No hay archivos disponibles para descargar.", size=18))
-
-    # # Mostrar mensaje si la app está actualizada o no
-    # if update_available:
-    #     update_message = ft.Text(
-    #         f"Hay una nueva versión disponible: {latest_version}",
-    #         size=20,
-    #         weight=ft.FontWeight.BOLD,
-    #     )
-    #     update_button = ft.ElevatedButton(
-    #         "Descargar última versión", on_click=download_click
-    #     )
-    # else:
-    #     update_message = ft.Text(
-    #         f"Tu aplicación está actualizada. Versión actual: {local_version}",
-    #         size=20,
-    #         weight=ft.FontWeight.BOLD,
-    #     )
-    #     update_button = ft.ElevatedButton(
-    #         "No hay actualizaciones disponibles", disabled=True
-    #     )
-
-    page.add(
-        ft.Row(
-            [
-                ft.IconButton(ft.Icons.REMOVE, on_click=minus_click),
-                txt_number,
-                ft.IconButton(ft.Icons.ADD, on_click=plus_click),
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-        ),
-        # update_message,
-        # update_button,
-    )
+    page.add(ft.ElevatedButton("Buscar actualizaciones", on_click=check_for_updates))
 
 
 ft.app(main)
