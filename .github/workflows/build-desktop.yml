@@ -96,6 +96,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Download macOS artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: macos-build-artifact
+        path: build/macos
+
+    - name: Download Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-build-artifact
+        path: build/windows
+
+    - name: Verify Downloaded Files
+      run: ls -R build/
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
@@ -103,7 +118,7 @@ jobs:
           build/macos/*
           build/windows/*
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     - name: Notify Release Success
       run: echo "Release has been successfully created!"
