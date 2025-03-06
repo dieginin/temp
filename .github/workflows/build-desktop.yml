@@ -165,8 +165,8 @@ jobs:
 
     - name: Compress Builds
       run: |
-        (cd build/macos && zip -r ../macos.zip ./*) && \
-        (cd build/windows && zip -r ../windows.zip ./*)
+        (cd build/macos && zip -r ../Build-macOS.zip ./*) && \
+        (cd build/windows && zip -r ../Build-Windows.zip ./*)
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -174,7 +174,7 @@ jobs:
         files: |
           build/${{ env.PROJECT }}-macOS.dmg
           build/${{ env.PROJECT }}-Windows.exe
-          build/macos.zip
-          build/windows.zip
+          build/Build-macOS.zip
+          build/Build-Windows.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
