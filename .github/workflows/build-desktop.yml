@@ -37,12 +37,20 @@ jobs:
     - name: Flet Build macOS
       run: |
         flutter config --no-analytics
-        flet build macos --verbose --project=$PROJECT --company=$COMPANY --copyright="Copyright © 2025 $COMPANY" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
+        flet build macos --verbose --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
 
-    - name: Set executable permissions
+    - name: Create macOS Installer
       run: |
-        chmod +x build/macos/$PROJECT.app/Contents/MacOS/$PROJECT
-        ls -l build/macos/$PROJECT.app/Contents/MacOS/
+        npm install -g create-dmg
+        create-dmg \
+          --overwrite \
+          --dmg-title "${{ env.PROJECT }} Installer" \
+          --app-drop-link 150 150 \
+          --window-pos 200 120 \
+          --window-size 600 400 \
+          --icon-size 100 \
+          "build/macos/${{ env.PROJECT }}.app" \
+          "build/${{ env.PROJECT }} macOS.dmg"
 
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -52,6 +60,14 @@ jobs:
         if-no-files-found: warn
         overwrite: false
 
+    - name: Upload macOS Installer
+      uses: actions/upload-artifact@v4.3.4
+      with:
+        name: macos-installer
+        path: build/${{ env.PROJECT }} macOS.dmg
+        if-no-files-found: warn
+        overwrite: false
+        
   build-windows:
     runs-on: windows-latest
 
@@ -77,8 +93,11 @@ jobs:
     - name: Flet Build Windows
       run: |
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=$env:PROJECT --company=$env:COMPANY --copyright="Copyright © 2025 $env:COMPANY" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
+        flet build windows --verbose --no-rich-output --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
 
+    - name: Create Windows Installer
+      run: iscc /DAppName=${{ env.PROJECT }} /DAppVersion=${GITHUB_REF#refs/tags/v} /DAppExe=build/windows/${{ env.PROJECT }}.exe installer_script.iss
+  
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
       with:
@@ -87,6 +106,14 @@ jobs:
         if-no-files-found: warn
         overwrite: false
 
+    - name: Upload Windows Installer
+      uses: actions/upload-artifact@v4.3.4
+      with:
+        name: windows-installer
+        path: build/windows/output/*.exe
+        if-no-files-found: warn
+        overwrite: false
+      
   create-release:
     runs-on: ubuntu-latest
     needs: [build-macos, build-windows]
@@ -103,11 +130,23 @@ jobs:
         name: macos-build-artifact
         path: build/macos
 
+    - name: Download macOS Installer
+      uses: actions/download-artifact@v4
+      with:
+        name: macos-installer
+        path: build
+
     - name: Download Windows artifact
       uses: actions/download-artifact@v4
       with:
         name: windows-build-artifact
         path: build/windows
+
+    - name: Download Windows Installer
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-installer
+        path: build
 
     - name: Compress folders
       run: |
@@ -117,8 +156,6 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          build/macos.zip
-          build/windows.zip
+        files: build/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
