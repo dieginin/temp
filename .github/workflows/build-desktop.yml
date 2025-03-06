@@ -108,7 +108,7 @@ jobs:
         echo 'Compression=lzma2' >> installer.iss
         echo 'SolidCompression=yes' >> installer.iss
         echo '[Files]' >> installer.iss
-        echo 'Source: "build/windows"; DestDir: "{app}"; Flags: ignoreversion' >> installer.iss
+        echo 'Source: "build\windows"; DestDir: "{app}"; Flags: ignoreversion' >> installer.iss
         echo '[Icons]' >> installer.iss
         echo 'Name: "{group}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
         iscc installer.iss
