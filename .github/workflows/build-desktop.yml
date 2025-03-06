@@ -39,14 +39,12 @@ jobs:
         flutter config --no-analytics
         flet build macos --verbose --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
 
-    - name: List Build Directory
-      run: ls -R build
-
     - name: Create macOS Installer
       run: |
         npm install -g create-dmg
         create-dmg \
           --overwrite \
+          --no-signed \
           --dmg-title "${{ env.PROJECT }} Installer" \
           --dmg-path="build/${{ env.PROJECT }} macOS.dmg" \
           "build/macos/${{ env.PROJECT }}.app"
@@ -63,7 +61,7 @@ jobs:
       uses: actions/upload-artifact@v4.3.4
       with:
         name: macos-installer
-        path: build/${{ env.PROJECT }} macOS.dmg
+        path: build/*.dmg
         if-no-files-found: warn
         overwrite: false
         
@@ -94,11 +92,8 @@ jobs:
         flutter config --no-analytics
         flet build windows --verbose --no-rich-output --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
 
-    - name: List Build Directory
-      run: Get-ChildItem -Path build -Recurse
-      
     - name: Create Windows Installer
-      run: iscc /DAppName=${{ env.PROJECT }} /DAppVersion=${GITHUB_REF#refs/tags/v} /DAppExe=build/windows/${{ env.PROJECT }}.exe windows_installer.iss
+      run: iscc /DAppName=${{ env.PROJECT }} /DAppVersion=${GITHUB_REF#refs/tags/v} /DAppExe=(Get-ChildItem -Path build/windows -Filter "*.exe").Name installer_script.iss
   
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -112,7 +107,7 @@ jobs:
       uses: actions/upload-artifact@v4.3.4
       with:
         name: windows-installer
-        path: output/${{ env.PROJECT }}-setup.exe
+        path: output/*.exe
         if-no-files-found: warn
         overwrite: false
       
@@ -158,6 +153,10 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: build/*
+        files: |
+          build/*.dmg
+          build/*.exe
+          build/macos.zip
+          build/windows.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
