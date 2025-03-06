@@ -7,7 +7,6 @@ on:
 env:
   PROJECT: MyApp
   COMPANY: Guanas
-  VERSION: ${GITHUB_REF#refs/tags/v}
   PYTHON_VERSION: 3.12.3
   FLUTTER_VERSION: 3.29.0
   PYTHONIOENCODING: utf-8
@@ -38,7 +37,13 @@ jobs:
     - name: Flet Build macOS
       run: |
         flutter config --no-analytics
-        flet build macos --verbose --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
+        flet build macos \
+          --verbose \
+          --project=${{ env.PROJECT }} \
+          --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} \
+          --copyright="Copyright © 2025 ${{ env.COMPANY }}" \
+          --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) \
+          --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Create macOS Installer
       run: |
@@ -95,14 +100,21 @@ jobs:
     - name: Flet Build Windows
       run: |
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
+        flet build windows \
+          --verbose \
+          --no-rich-output \
+          --project=${{ env.PROJECT }} \
+          --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} \
+          --copyright="Copyright © 2025 ${{ env.COMPANY }}" \
+          --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') \
+          --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Create Windows Installer
       run: |
         echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
         echo '[Setup]' > installer.iss
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
-        echo 'AppVersion=${{ env.VERSION }}' >> installer.iss
+        echo 'AppVersion=$VERSION' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
         echo 'OutputDir=output' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
