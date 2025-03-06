@@ -7,6 +7,7 @@ on:
 env:
   PROJECT: MyApp
   COMPANY: Guanas
+  VERSION: ${GITHUB_REF#refs/tags/v}
   PYTHON_VERSION: 3.12.3
   FLUTTER_VERSION: 3.29.0
   PYTHONIOENCODING: utf-8
@@ -56,7 +57,7 @@ jobs:
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
       with:
-        name: macos-build-artifact
+        name: macos-build
         path: build/macos
         if-no-files-found: warn
         overwrite: false
@@ -98,9 +99,10 @@ jobs:
 
     - name: Create Windows Installer
       run: |
+        echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
         echo '[Setup]' > installer.iss
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
-        echo 'AppVersion=${GITHUB_REF#refs/tags/v}' >> installer.iss
+        echo 'AppVersion=${{ env.VERSION }}' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
         echo 'OutputDir=output' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
@@ -115,7 +117,7 @@ jobs:
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
       with:
-        name: windows-build-artifact
+        name: windows-build
         path: build/windows
         if-no-files-found: warn
         overwrite: false
@@ -138,31 +140,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Download macOS artifact
+    - name: Download macOS build
       uses: actions/download-artifact@v4
       with:
-        name: macos-build-artifact
+        name: macos-build
         path: build/macos
 
-    - name: Download macOS Installer
+    - name: Download macOS installer
       uses: actions/download-artifact@v4
       with:
         name: macos-installer
         path: build
 
-    - name: Download Windows artifact
+    - name: Download Windows build
       uses: actions/download-artifact@v4
       with:
-        name: windows-build-artifact
+        name: windows-build
         path: build/windows
 
-    - name: Download Windows Installer
+    - name: Download Windows installer
       uses: actions/download-artifact@v4
       with:
         name: windows-installer
         path: build
 
-    - name: Compress folders
+    - name: Compress builds
       run: |
         (cd build/macos && zip -r ../macos.zip ./*) && \
         (cd build/windows && zip -r ../windows.zip ./*)
