@@ -41,16 +41,12 @@ jobs:
 
     - name: Create macOS Installer
       run: |
-        npm install -g create-dmg
+        gm install -g create-dmg
         create-dmg \
           --overwrite \
           --dmg-title "${{ env.PROJECT }} Installer" \
-          --app-drop-link 150 150 \
-          --window-pos 200 120 \
-          --window-size 600 400 \
-          --icon-size 100 \
-          "build/macos/${{ env.PROJECT }}.app" \
-          "build/${{ env.PROJECT }} macOS.dmg"
+          --dmg-path="build/${{ env.PROJECT }} macOS.dmg" \
+          "build/macos/${{ env.PROJECT }}.app"
 
     - name: Upload macOS Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -96,7 +92,7 @@ jobs:
         flet build windows --verbose --no-rich-output --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Create Windows Installer
-      run: iscc /DAppName=${{ env.PROJECT }} /DAppVersion=${GITHUB_REF#refs/tags/v} /DAppExe=build/windows/${{ env.PROJECT }}.exe installer_script.iss
+      run: iscc windows_installer.iss
   
     - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -110,7 +106,7 @@ jobs:
       uses: actions/upload-artifact@v4.3.4
       with:
         name: windows-installer
-        path: build/windows/output/*.exe
+        path: output/${{ env.PROJECT }}-setup.exe
         if-no-files-found: warn
         overwrite: false
       
