@@ -155,8 +155,8 @@ def main(page: ft.Page):
         else:
             page.add(ft.Text("Estás en la última versión."))
 
-    page.add(ft.Text("MyApp Sin Actualizar"))
-    # page.add(ft.Text("MyApp Actualizada"))
+    # page.add(ft.Text("MyApp Sin Actualizar"))
+    page.add(ft.Text("MyApp Actualizada"))
     page.add(ft.ElevatedButton("Buscar actualizaciones", on_click=check_for_updates))
 
 
