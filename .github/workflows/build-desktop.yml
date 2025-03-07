@@ -107,9 +107,14 @@ jobs:
         echo 'Compression=lzma2' >> installer.iss
         echo 'SolidCompression=yes' >> installer.iss
         echo '[Files]' >> installer.iss
-        echo 'Source: "build\\windows\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
+        echo 'Source: "build\\windows\\*"; DestDir: '{app}''; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
         echo '[Icons]' >> installer.iss
         echo 'Name: "{group}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
+        echo 'Name: "{group}\Desinstalar"; Filename: "{uninstallexe}"' >> installer.iss
+        echo '[Run]' >> installer.iss
+        echo 'Filename: "{app}\${{ env.PROJECT }}.exe"; Description: '${{ env.PROJECT }}'; Flags: nowait postinstall skipifsilent' >> installer.iss
+        echo '[UninstallDelete]' >> installer.iss
+        echo 'Type: filesandordirs; Name: "{app}"' >> installer.iss
         iscc installer.iss
   
     - name: Upload Windows Build
