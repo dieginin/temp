@@ -101,6 +101,7 @@ jobs:
         echo '[Setup]' > installer.iss
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
         echo 'AppVersion=${{ github.ref_name }}' >> installer.iss
+        echo 'AppPublisher=${{ env.COMPANY }}' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
         echo 'OutputDir=output' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
