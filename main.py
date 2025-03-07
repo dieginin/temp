@@ -29,9 +29,9 @@ def find_update_asset(assets):
     """Busca el archivo de actualización correspondiente al sistema operativo"""
     system = platform.system().lower()
     for asset in assets:
-        if "macos" in asset["name"].lower() and system == "darwin":
+        if "build-macos" in asset["name"].lower() and system == "darwin":
             return asset["browser_download_url"], asset["name"]
-        elif "windows" in asset["name"].lower() and system == "windows":
+        elif "build-windows" in asset["name"].lower() and system == "windows":
             return asset["browser_download_url"], asset["name"]
     return None, None
 
@@ -139,10 +139,15 @@ def main(page: ft.Page):
         latest_version, _ = get_latest_version()
         if latest_version and latest_version > VERSION:
             page.add(ft.Text(f"¡Nueva versión {latest_version} disponible!"))
-            page.add(ft.ElevatedButton("Actualizar ahora", on_click=update_app))
+            page.add(
+                ft.ElevatedButton(
+                    "Actualizar ahora", on_click=lambda _: update_app(e.page)
+                )
+            )
         else:
             page.add(ft.Text("Estás en la última versión."))
 
+    page.add(ft.Text("MyApp"))
     page.add(ft.ElevatedButton("Buscar actualizaciones", on_click=check_for_updates))
 
 

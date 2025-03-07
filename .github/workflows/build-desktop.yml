@@ -101,7 +101,7 @@ jobs:
         echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
         echo '[Setup]' > installer.iss
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
-        echo 'AppVersion=$VERSION' >> installer.iss
+        echo 'AppVersion=${VERSION}' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
         echo 'OutputDir=output' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
