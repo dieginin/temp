@@ -1,6 +1,7 @@
 import os
 import platform
 import shutil
+import subprocess
 import zipfile
 
 import flet as ft
@@ -97,7 +98,8 @@ def update_app(page: ft.Page):
         page.update()
         return
 
-    if latest_version <= VERSION:
+    parse_version = lambda v: tuple(map(int, v.split(".")))
+    if parse_version(latest_version) <= parse_version(VERSION):
         status.value = "Ya tienes la última versión."
         page.update()
         return
@@ -126,9 +128,10 @@ def update_app(page: ft.Page):
 
     # Reiniciar la aplicación
     if platform.system().lower() == "windows":
-        os.execl("MyApp.exe", "")
+        subprocess.Popen(["MyApp.exe"])
     else:
-        os.execl("./MyApp.app/Contents/MacOS/MyApp", "")
+        subprocess.Popen(["open", "./MyApp.app"])
+    os._exit(0)
 
 
 def main(page: ft.Page):
@@ -147,8 +150,10 @@ def main(page: ft.Page):
         else:
             page.add(ft.Text("Estás en la última versión."))
 
-    page.add(ft.Text("MyApp Actualizada"))
+    page.add(ft.Text("MyApp Sin Actualizar"))
+    # page.add(ft.Text("MyApp Actualizada"))
     page.add(ft.ElevatedButton("Buscar actualizaciones", on_click=check_for_updates))
 
 
+ft.app(main)
 ft.app(main)
