@@ -100,7 +100,6 @@ jobs:
       run: |
         echo '[Setup]' > installer.iss
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
-        echo 'AppVersion=${{ github.ref.tags }}' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
         echo 'OutputDir=output' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
@@ -110,7 +109,7 @@ jobs:
         echo 'Source: "build\\windows\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
         echo '[Icons]' >> installer.iss
         echo 'Name: "{group}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
-        iscc installer.iss
+        iscc /DAppVersion=${GITHUB_REF#refs/tags/v} installer.iss
   
     - name: Upload Windows Build
       uses: actions/upload-artifact@v4.3.4
