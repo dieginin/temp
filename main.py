@@ -2,6 +2,7 @@ import os
 import platform
 import shutil
 import subprocess
+import tempfile
 import zipfile
 
 import flet as ft
@@ -31,14 +32,17 @@ def find_update_asset(assets):
     system = platform.system().lower()
     for asset in assets:
         if "build-macos" in asset["name"].lower() and system == "darwin":
-            return asset["browser_download_url"], asset["name"]
+            return asset["browser_download_url"]
         elif "build-windows" in asset["name"].lower() and system == "windows":
-            return asset["browser_download_url"], asset["name"]
+            return asset["browser_download_url"]
     return None, None
 
 
-def download_update(url, filename, progress_callback):
-    """Descarga el archivo de actualización con progreso"""
+def download_update(url, progress_callback):
+    """Descarga el archivo de actualización en una carpeta temporal"""
+    temp_dir = tempfile.gettempdir()  # Carpeta temporal del sistema
+    filename = os.path.join(temp_dir, "update.zip")
+
     with requests.get(url, stream=True) as response:
         response.raise_for_status()
         total_size = int(response.headers.get("content-length", 0))
@@ -51,37 +55,37 @@ def download_update(url, filename, progress_callback):
                     downloaded += len(chunk)
                     progress_callback(downloaded / total_size)
 
+    return filename
+
 
 def apply_update(filename):
-    """Extrae y reemplaza la aplicación con la nueva versión"""
+    """Extrae la actualización en una carpeta temporal y reemplaza la aplicación"""
     system = platform.system().lower()
-    extract_path = os.getcwd()
+    temp_dir = tempfile.mkdtemp()
 
-    if filename.endswith(".zip"):
+    try:
+        # Extraer actualización en la carpeta temporal
         with zipfile.ZipFile(filename, "r") as zip_ref:
-            zip_ref.extractall(extract_path)
+            zip_ref.extractall(temp_dir)
         os.remove(filename)
 
-    # Reemplazar archivos antiguos
-    if system == "windows":
-        new_exe = os.path.join(extract_path, "MyApp.exe")
-        old_exe = os.path.join(extract_path, "MyApp_old.exe")
+        # Reemplazar archivos antiguos directamente
+        if system == "windows":
+            new_exe = os.path.join(temp_dir, "MyApp.exe")
+            if os.path.exists(new_exe):
+                shutil.move(new_exe, os.getcwd())
 
-        if os.path.exists(new_exe):
-            os.rename("MyApp.exe", old_exe)
-            os.rename(new_exe, "MyApp.exe")
-            os.remove(old_exe)
+        elif system == "darwin":
+            new_app = os.path.join(temp_dir, "MyApp.app")
+            if os.path.exists(new_app):
+                shutil.move(new_app, os.getcwd())
 
-    elif system == "darwin":
-        new_app = os.path.join(extract_path, "MyApp.app")
-        old_app = os.path.join(extract_path, "MyApp_old.app")
+    except Exception as e:
+        print("Error al aplicar la actualización:", e)
 
-        if os.path.exists(new_app):
-            if os.path.exists(old_app):
-                shutil.rmtree(old_app)
-            os.rename("MyApp.app", old_app)
-            os.rename(new_app, "MyApp.app")
-            shutil.rmtree(old_app)
+    finally:
+        # Eliminar carpeta temporal
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 def update_app(page: ft.Page):
@@ -104,7 +108,7 @@ def update_app(page: ft.Page):
         page.update()
         return
 
-    url, filename = find_update_asset(assets)
+    url = find_update_asset(assets)
     if not url:
         status.value = "No se encontró una actualización para tu sistema operativo."
         page.update()
@@ -117,9 +121,10 @@ def update_app(page: ft.Page):
         progress.value = value
         page.update()
 
-    download_update(url, filename, update_progress)
+    filename = download_update(url, update_progress)
 
     status.value = "Instalando actualización..."
+    progress.value = None
     page.update()
     apply_update(filename)
 
@@ -150,8 +155,8 @@ def main(page: ft.Page):
         else:
             page.add(ft.Text("Estás en la última versión."))
 
-    # page.add(ft.Text("MyApp Sin Actualizar"))
-    page.add(ft.Text("MyApp Actualizada"))
+    page.add(ft.Text("MyApp Sin Actualizar"))
+    # page.add(ft.Text("MyApp Actualizada"))
     page.add(ft.ElevatedButton("Buscar actualizaciones", on_click=check_for_updates))
 
 
