@@ -58,7 +58,7 @@ jobs:
       with:
         name: macos-build
         path: build/macos
-        if-no-files-found: warn
+        if-no-files-found: error
         overwrite: false
 
     - name: Upload macOS Installer
@@ -66,7 +66,7 @@ jobs:
       with:
         name: macos-installer
         path: build/${{ env.PROJECT }}-macOS.dmg
-        if-no-files-found: warn
+        if-no-files-found: error
         overwrite: false
         
   build-windows:
@@ -98,10 +98,9 @@ jobs:
 
     - name: Create Windows Installer
       run: |
-        echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
         echo '[Setup]' > installer.iss
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
-        echo 'AppVersion=${VERSION}' >> installer.iss
+        echo 'AppVersion=${{ github.ref.tags }}' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
         echo 'OutputDir=output' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
@@ -118,7 +117,7 @@ jobs:
       with:
         name: windows-build
         path: build/windows
-        if-no-files-found: warn
+        if-no-files-found: error
         overwrite: false
 
     - name: Upload Windows Installer
@@ -126,7 +125,7 @@ jobs:
       with:
         name: windows-installer
         path: output/${{ env.PROJECT }}-Windows.exe
-        if-no-files-found: warn
+        if-no-files-found: error
         overwrite: false
       
   create-release:
