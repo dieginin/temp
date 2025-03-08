@@ -12,7 +12,7 @@ def main(page: ft.Page):
     def check_for_updates(e):
         updater.check_for_updates(page)
 
-    page.add(ft.Text(f"MyApp v{VERSION}!!!"))
+    page.add(ft.Text(f"MyApp v{VERSION}"))
     page.add(ft.ElevatedButton("Buscar actualizaciones", on_click=check_for_updates))
 
 
