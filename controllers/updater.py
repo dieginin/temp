@@ -4,50 +4,89 @@ import shutil
 import subprocess
 import tempfile
 import zipfile
+from typing import Callable, Optional
 
 import flet as ft
 import requests
 
 from config import VERSION
 
+GITHUB_REPO = "dieginin/temp"
+API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+
+
+def get_asset_url(assets: dict) -> str:
+    system = platform.system().lower()
+    platform_assets = {"darwin": "build-macos", "windows": "build-windows"}
+
+    for asset in assets:
+        if platform_assets.get(system, "") in asset["name"].lower():
+            return asset["browser_download_url"]
+    raise Exception("Asset not found for your operating system.")
+
 
 class Updater:
-    """Clase para manejar la actualización de la aplicación"""
+    def __init__(self, page: ft.Page) -> None:
+        self.page = page
 
-    GITHUB_REPO = "dieginin/temp"  # Cambia esto a tu repo
-    API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+        self.check_for_updates()
 
-    @staticmethod
-    def get_latest_version():
-        """Obtiene la última versión disponible en GitHub"""
-        try:
-            response = requests.get(Updater.API_URL)
-            response.raise_for_status()
-            data = response.json()
-            latest_version = data["tag_name"].lstrip("v")
-            assets = data["assets"]
-            return latest_version, assets
-        except requests.RequestException as e:
-            print("Error al verificar actualizaciones:", e)
-            return None, None
+    def get_latest_version(self) -> tuple[str, str]:
+        response = requests.get(API_URL)
+        response.raise_for_status()
 
-    @staticmethod
-    def find_update_asset(assets):
-        """Busca el archivo de actualización correspondiente al sistema operativo"""
+        data = response.json()
+        return data["tag_name"].lstrip("v"), get_asset_url(data["assets"])
+
+    def check_for_updates(self) -> None:
+        parse_version = lambda v: tuple(map(int, v.split(".")))
+        latest_version, _ = self.get_latest_version()
+        if parse_version(latest_version) > parse_version(VERSION):
+            self.dialog = ft.AlertDialog(
+                True,
+                ft.Text(f"Actualización {latest_version} disponible"),
+                ft.Text(f"La actualización comenzará automáticamente"),
+                [ft.TextButton("Aceptar", on_click=self.update_app)],
+            )
+            self.page.open(self.dialog)
+
+    def update_app(self, _) -> None:
+        def update_progress(value: Optional[float]) -> None:
+            progress.value = value
+            self.page.update()
+
+        self.page.close(self.dialog)
+        latest_version, url = self.get_latest_version()
+
+        self.page.clean()
+        self.page.title = "Actualizando..."
+        progress = ft.ProgressBar(width=300)
+        status = ft.Text("Buscando actualización...")
+        self.page.add(status, progress)
+
+        status.value = f"Descargando actualización v{latest_version}..."
+        self.page.update()
+
+        filename = self.download_update(url, update_progress)
+
+        status.value = "Instalando actualización..."
+        update_progress(None)
+
+        self.apply_update(filename)
+
+        status.value = "Actualización completada. Reiniciando..."
+        self.page.update()
+
         system = platform.system().lower()
-        for asset in assets:
-            if "build-macos" in asset["name"].lower() and system == "darwin":
-                return asset["browser_download_url"]
-            elif "build-windows" in asset["name"].lower() and system == "windows":
-                return asset["browser_download_url"]
-        return None
+        if system == "windows":
+            subprocess.Popen([os.path.join(os.getcwd(), "MyApp.exe")])
+        elif system == "darwin":
+            subprocess.Popen(["open", os.path.join(os.getcwd(), "MyApp.app")])
 
-    @staticmethod
-    def download_update(url, progress_callback):
-        """Descarga el archivo de actualización en una carpeta temporal"""
-        temp_dir = tempfile.gettempdir()
-        filename = os.path.join(temp_dir, "update.zip")
+        os._exit(0)
 
+    def download_update(self, url: str, progress_callback: Callable) -> str:
+        filename = os.path.join(tempfile.gettempdir(), "update.zip")
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
             total_size = int(response.headers.get("content-length", 0))
@@ -62,9 +101,7 @@ class Updater:
 
         return filename
 
-    @staticmethod
-    def apply_update(filename):
-        """Extrae la actualización en una carpeta temporal y reemplaza la aplicación"""
+    def apply_update(self, filename: str) -> None:
         system = platform.system().lower()
         temp_dir = tempfile.mkdtemp()
 
@@ -73,11 +110,14 @@ class Updater:
                 zip_ref.extractall(temp_dir)
             os.remove(filename)
 
-            # Reemplazar archivos antiguos directamente
             if system == "windows":
-                new_exe = os.path.join(temp_dir, "MyApp.exe")
-                if os.path.exists(new_exe):
-                    shutil.move(new_exe, os.getcwd())
+                for item in os.listdir(temp_dir):
+                    source = os.path.join(temp_dir, item)
+                    destiny = os.path.join(os.getcwd(), item)
+                    if os.path.isdir(source):
+                        shutil.copytree(source, destiny, dirs_exist_ok=True)
+                    else:
+                        shutil.copy2(source, destiny)
 
             elif system == "darwin":
                 new_app = os.path.join(temp_dir, "MyApp.app")
@@ -89,76 +129,3 @@ class Updater:
 
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
-
-    @staticmethod
-    def update_app(page: ft.Page):
-        """Interfaz gráfica de actualización con barra de progreso"""
-        page.clean()
-        page.title = "Actualizando..."
-        progress = ft.ProgressBar(width=300)
-        status = ft.Text("Buscando actualización...")
-        page.add(status, progress)
-
-        latest_version, assets = Updater.get_latest_version()
-        if not latest_version or not assets:
-            status.value = "Error al buscar actualizaciones."
-            page.update()
-            return
-
-        parse_version = lambda v: tuple(map(int, v.split(".")))
-        if parse_version(latest_version) <= parse_version(VERSION):
-            status.value = "Ya tienes la última versión."
-            page.update()
-            return
-
-        url = Updater.find_update_asset(assets)
-        if not url:
-            status.value = "No se encontró una actualización para tu sistema operativo."
-            page.update()
-            return
-
-        status.value = f"Descargando actualización v{latest_version}..."
-        page.update()
-
-        def update_progress(value):
-            progress.value = value
-            page.update()
-
-        filename = Updater.download_update(url, update_progress)
-
-        status.value = "Instalando actualización..."
-        progress.value = None
-        page.update()
-        Updater.apply_update(filename)
-
-        status.value = "Actualización completada. Reiniciando..."
-        page.update()
-
-        # Reiniciar la aplicación
-        if platform.system().lower() == "windows":
-            subprocess.Popen(["MyApp.exe"])
-        else:
-            subprocess.Popen(["open", "./MyApp.app"])
-        os._exit(0)
-
-    @staticmethod
-    def check_for_updates(page: ft.Page):
-        """Verifica si hay actualizaciones y muestra un botón para actualizar"""
-        latest_version, assets = Updater.get_latest_version()
-        if not latest_version:
-            page.add(ft.Text("Error al verificar actualizaciones."))
-            page.update()
-            return
-
-        parse_version = lambda v: tuple(map(int, v.split(".")))
-        if parse_version(latest_version) > parse_version(VERSION):
-            page.add(ft.Text(f"¡Nueva versión {latest_version} disponible!"))
-            page.add(
-                ft.ElevatedButton(
-                    "Actualizar ahora", on_click=lambda _: Updater.update_app(page)
-                )
-            )
-        else:
-            page.add(ft.Text("Estás en la última versión."))
-
-        page.update()
