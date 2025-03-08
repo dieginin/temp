@@ -4,11 +4,10 @@ from config import VERSION
 from controllers import Updater
 
 
-def main(page: ft.Page):
-    """Interfaz principal con botón de verificación de actualizaciones"""
+def main(page: ft.Page) -> None:
     page.title = "Flet App"
 
-    def check_for_updates(e):
+    def check_for_updates(e) -> None:
         updater.check_for_updates()
 
     page.add(ft.Text(f"MyApp v{VERSION}"))
