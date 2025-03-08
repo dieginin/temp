@@ -1,9 +1,8 @@
 import os
 import platform
-import shutil
 import subprocess
+import sys
 import tempfile
-import zipfile
 from typing import Callable, Optional
 
 import flet as ft
@@ -61,7 +60,7 @@ class Updater:
         self.page.clean()
         self.page.title = "Actualizando..."
         progress = ft.ProgressBar(width=300)
-        status = ft.Text("Buscando actualización...")
+        status = ft.Text("Preparando actualización...")
         self.page.add(status, progress)
 
         status.value = f"Descargando actualización v{latest_version}..."
@@ -69,19 +68,10 @@ class Updater:
 
         filename = self.download_update(url, update_progress)
 
-        status.value = "Instalando actualización..."
+        status.value = "Actualización descargada. Reiniciando..."
         update_progress(None)
 
-        self.apply_update(filename)
-
-        status.value = "Actualización completada. Reiniciando..."
-        self.page.update()
-
-        system = platform.system().lower()
-        if system == "windows":
-            subprocess.Popen([os.path.join(os.getcwd(), "MyApp.exe")])
-        elif system == "darwin":
-            subprocess.Popen(["open", os.path.join(os.getcwd(), "MyApp.app")])
+        subprocess.Popen([sys.executable, "helpers/updater_runner.py", filename])
 
         os._exit(0)
 
@@ -98,34 +88,4 @@ class Updater:
                         f.write(chunk)
                         downloaded += len(chunk)
                         progress_callback(downloaded / total_size)
-
         return filename
-
-    def apply_update(self, filename: str) -> None:
-        system = platform.system().lower()
-        temp_dir = tempfile.mkdtemp()
-
-        try:
-            with zipfile.ZipFile(filename, "r") as zip_ref:
-                zip_ref.extractall(temp_dir)
-            os.remove(filename)
-
-            if system == "windows":
-                for item in os.listdir(temp_dir):
-                    source = os.path.join(temp_dir, item)
-                    destiny = os.path.join(os.getcwd(), item)
-                    if os.path.isdir(source):
-                        shutil.copytree(source, destiny, dirs_exist_ok=True)
-                    else:
-                        shutil.copy2(source, destiny)
-
-            elif system == "darwin":
-                new_app = os.path.join(temp_dir, "MyApp.app")
-                if os.path.exists(new_app):
-                    shutil.move(new_app, os.getcwd())
-
-        except Exception as e:
-            print("Error al aplicar la actualización:", e)
-
-        finally:
-            shutil.rmtree(temp_dir, ignore_errors=True)
