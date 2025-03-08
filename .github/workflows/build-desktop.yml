@@ -102,7 +102,7 @@ jobs:
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
         echo 'AppVersion=${{ github.ref_name }}' >> installer.iss
         echo 'AppPublisher=${{ env.COMPANY }}' >> installer.iss
-        echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
+        echo 'DefaultDirName={auto}\${{ env.PROJECT }}' >> installer.iss
         echo 'DefaultGroupName=${{ env.PROJECT }}' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
         echo 'Compression=lzma2' >> installer.iss
@@ -113,8 +113,8 @@ jobs:
         echo 'Source: "build\windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
         echo '[Icons]' >> installer.iss
         echo 'Name: "{commondesktop}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
-        echo 'Name: "{group}\${{ env.PROJECT }}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
-        echo 'Name: "{group}\${{ env.PROJECT }}\Desinstalar ${{ env.PROJECT }}"; Filename: "{app}\unins000.exe"' >> installer.iss
+        echo 'Name: "{group}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
+        echo 'Name: "{group}\Desinstalar ${{ env.PROJECT }}"; Filename: "{app}\unins000.exe"' >> installer.iss
         echo '[Run]' >> installer.iss
         echo 'Filename: "{app}\${{ env.PROJECT }}.exe"; Description: "Ejecutar ${{ env.PROJECT }}"; Flags: postinstall nowait skipifsilent unchecked' >> installer.iss
         iscc installer.iss
