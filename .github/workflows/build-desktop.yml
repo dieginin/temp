@@ -113,10 +113,10 @@ jobs:
         echo 'Source: "build\windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
         echo '[Icons]' >> installer.iss
         echo 'Name: "{commondesktop}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
-        echo 'Name: "{group}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
-        echo 'Name: "{group}\Desinstalar ${{ env.PROJECT }}"; Filename: "{uninstallexe}"' >> installer.iss
+        echo 'Name: "{group}\${{ env.PROJECT }}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
+        echo 'Name: "{group}\${{ env.PROJECT }}\Desinstalar ${{ env.PROJECT }}"; Filename: "{uninstallexe}"' >> installer.iss
         echo '[Run]' >> installer.iss
-        echo 'Filename: "{app}\${{ env.PROJECT }}.exe"; Description: "Ejecutar ${{ env.PROJECT }}"; Flags: postinstall skipifsilent' >> installer.iss
+        echo 'Filename: "{app}\${{ env.PROJECT }}.exe"; Description: "Ejecutar ${{ env.PROJECT }}"; Flags: postinstall nowait skipifsilent unchecked' >> installer.iss
         iscc installer.iss
   
     - name: Upload Windows Build
