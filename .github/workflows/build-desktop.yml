@@ -37,7 +37,7 @@ jobs:
     - name: Build Flet macOS
       run: |
         flutter config --no-analytics
-        flet build macos --verbose --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
+        flet build macos --verbose --project=${{ env.PROJECT }} --company=${{ env.COMPANY }} --org=com.${{ env.COMPANY }} --bundle-id=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$(echo ${GITHUB_REF#refs/tags/v} | cut -d '.' -f 1) --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Create macOS Installer
       run: |
@@ -94,7 +94,7 @@ jobs:
     - name: Build Flet Windows
       run: |
         flutter config --no-analytics
-        flet build windows --verbose --no-rich-output --project=${{ env.PROJECT }} --company=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
+        flet build windows --verbose --project=${{ env.PROJECT }} --company=${{ env.COMPANY }} --org=com.${{ env.COMPANY }} --bundle-id=com.${{ env.COMPANY }}.${{ env.PROJECT }} --copyright="Copyright © 2025 ${{ env.COMPANY }}" --build-number=$($env:GITHUB_REF -match 'v(\d+)' ? $matches[1] : '1') --build-version=${GITHUB_REF#refs/tags/v}
 
     - name: Create Windows Installer
       run: |
@@ -103,17 +103,20 @@ jobs:
         echo 'AppVersion=${{ github.ref_name }}' >> installer.iss
         echo 'AppPublisher=${{ env.COMPANY }}' >> installer.iss
         echo 'DefaultDirName={pf}\${{ env.PROJECT }}' >> installer.iss
-        echo 'OutputDir=output' >> installer.iss
+        echo 'DefaultGroupName=${{ env.PROJECT }}' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
         echo 'Compression=lzma2' >> installer.iss
         echo 'SolidCompression=yes' >> installer.iss
+        echo '[Languages]' >> installer.iss
+        echo 'Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"' >> installer.iss
         echo '[Files]' >> installer.iss
         echo 'Source: "build\windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
         echo '[Icons]' >> installer.iss
-        echo 'Name: "${{ env.PROJECT }}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
-        echo 'Name: "${{ env.PROJECT }}\Desinstalar"; Filename: "{uninstallexe}"' >> installer.iss
+        echo 'Name: "{commondesktop}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
+        echo 'Name: "{group}\${{ env.PROJECT }}"; Filename: "{app}\${{ env.PROJECT }}.exe"' >> installer.iss
+        echo 'Name: "{group}\Desinstalar ${{ env.PROJECT }}"; Filename: "{uninstallexe}"' >> installer.iss
         echo '[Run]' >> installer.iss
-        echo 'Filename: "{app}\${{ env.PROJECT }}.exe"; Description: "${{ env.PROJECT }}"; Flags: nowait postinstall skipifsilent' >> installer.iss
+        echo 'Filename: "{app}\${{ env.PROJECT }}.exe"; Description: "Ejecutar ${{ env.PROJECT }}"; Flags: postinstall skipifsilent' >> installer.iss
         iscc installer.iss
   
     - name: Upload Windows Build
