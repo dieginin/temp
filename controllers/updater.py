@@ -3,6 +3,8 @@ import platform
 import subprocess
 import sys
 import tempfile
+import time
+from random import uniform
 from typing import Callable, Optional
 
 import flet as ft
@@ -70,6 +72,7 @@ class Updater:
 
         status.value = "Actualización descargada. Reiniciando..."
         update_progress(None)
+        time.sleep(uniform(0, 3))
 
         subprocess.Popen([sys.executable, "helpers/updater_runner.py", filename])
 
