@@ -108,7 +108,6 @@ jobs:
         echo 'AppName=${{ env.PROJECT }}' >> installer.iss
         echo 'AppVersion=${{ github.ref_name }}' >> installer.iss
         echo 'AppPublisher=${{ env.COMPANY }}' >> installer.iss
-        echo 'DefaultDirName={auto}\${{ env.PROJECT }}' >> installer.iss
         echo 'DefaultGroupName=${{ env.PROJECT }}' >> installer.iss
         echo 'OutputBaseFilename=${{ env.PROJECT }}-Windows' >> installer.iss
         echo 'Compression=lzma2' >> installer.iss
